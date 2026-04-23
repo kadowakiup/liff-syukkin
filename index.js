@@ -6,6 +6,34 @@ function updateStatus(text) {
   document.getElementById("status-text").innerText = text;
 }
 
+
+// （上部の変数定義や updateStatus などはそのまま）
+
+// ページの読み込みが完了したら、ボタンにクリックイベントを設定
+window.onload = async function() {
+  // まずLIFFの初期化だけ先にやっておく（画面が開いた瞬間）
+  await liff.init({ liffId: LIFF_ID });
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+
+  // ボタンが押された時の処理
+  document.getElementById("clock-in-btn").addEventListener("click", function() {
+    if (navigator.geolocation) {
+      // 初期画面（ボタン）を隠して、ローディング画面を出す
+      document.getElementById("initial-view").style.display = "none";
+      document.getElementById("spinner").style.display = "block";
+      
+      // ここで初めて打刻処理（main関数）をスタート
+      main(); 
+    } else {
+      showError("この端末では位置情報がサポートされていません。");
+    }
+  });
+};
+
+
 // エラーを表示する関数（LINEアプリ内でのデバッグ用）
 function showError(text) {
   document.getElementById("spinner").style.display = "none";

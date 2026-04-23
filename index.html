@@ -50,8 +50,12 @@
 </head>
 <body>
 
-  <div class="spinner" id="spinner"></div>
-  <div id="status-text">打刻中...</div>
+  <div id="initial-view">
+    <button id="clock-in-btn" style="padding: 15px 40px; font-size: 18px; background-color: #06c755; color: white; border: none; border-radius: 8px; cursor: pointer;">出勤する</button>
+  </div>
+  
+  <div class="spinner" id="spinner" style="display: none;"></div>
+  <div id="status-text"></div>
   <div id="error-message"></div>
 
   <script src="index.js"></script>
