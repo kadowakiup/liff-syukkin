@@ -1,4 +1,4 @@
-const LIFF_ID = "2009569390-mIdIYR0X"; 
+const LIFF_ID = "2009827198-EiWGvF0N"; 
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzEqLJDyl6t3N2pKcDnO0-w0uFTcO6x5tzQLN69-YsuSEWtEsMpXVwKx89592abTs7VdQ/exec";
 
 // 画面のテキストを更新する関数
