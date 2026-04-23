@@ -71,6 +71,7 @@ async function main() {
     }
 
     // 6. 成功したらLIFFを閉じる
+    document.getElementById("spinner").style.display = "none";
     updateStatus("打刻完了！");
     setTimeout(() => {
       liff.closeWindow();
