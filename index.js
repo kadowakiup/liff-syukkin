@@ -43,8 +43,15 @@ async function main() {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
-    // 4. 現在日時の取得
-    const timestamp = new Date().toISOString();
+    // 4. 現在日時の取得（日本時間の YYYY-MM-DD HH:mm 形式に変換）
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    const timestamp = `${year}-${month}-${day} ${hours}:${minutes}`;
 
     // 送信するデータの組み立て
     const payload = {
