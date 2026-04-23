@@ -6,34 +6,6 @@ function updateStatus(text) {
   document.getElementById("status-text").innerText = text;
 }
 
-
-// （上部の変数定義や updateStatus などはそのまま）
-
-// ページの読み込みが完了したら、ボタンにクリックイベントを設定
-window.onload = async function() {
-  // まずLIFFの初期化だけ先にやっておく（画面が開いた瞬間）
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
-
-  // ボタンが押された時の処理
-  document.getElementById("clock-in-btn").addEventListener("click", function() {
-    if (navigator.geolocation) {
-      // 初期画面（ボタン）を隠して、ローディング画面を出す
-      document.getElementById("initial-view").style.display = "none";
-      document.getElementById("spinner").style.display = "block";
-      
-      // ここで初めて打刻処理（main関数）をスタート
-      main(); 
-    } else {
-      showError("この端末では位置情報がサポートされていません。");
-    }
-  });
-};
-
-
 // エラーを表示する関数（LINEアプリ内でのデバッグ用）
 function showError(text) {
   document.getElementById("spinner").style.display = "none";
@@ -41,24 +13,46 @@ function showError(text) {
   document.getElementById("error-message").innerText = text;
 }
 
-// メインの処理（★ここに async がついている必要がある）
-async function main() {
+// ★ ページの読み込みが完了した時の処理（ここにすべてまとめました）
+window.onload = async function() {
   try {
-    // 1. LIFFの初期化
+    // 1. 画面が開いた瞬間にLIFFの初期化だけ済ませておく
     await liff.init({ liffId: LIFF_ID });
 
-    // LINE外ブラウザなどで未ログインの場合はログインを促す
+    // 未ログインの場合はログインを促す
     if (!liff.isLoggedIn()) {
       liff.login();
       return;
     }
 
-    // 2. ユーザーIDの取得
+    // 2. 「出勤する」ボタンが押された時の処理を設定
+    document.getElementById("clock-in-btn").addEventListener("click", function() {
+      if (navigator.geolocation) {
+        // 初期画面（ボタン）を隠して、ローディング画面（ぐるぐる）を出す
+        document.getElementById("initial-view").style.display = "none";
+        document.getElementById("spinner").style.display = "block";
+        
+        // ここで初めて打刻処理（main関数）をスタート！
+        main(); 
+      } else {
+        showError("この端末では位置情報がサポートされていません。");
+      }
+    });
+  } catch (error) {
+    showError("LIFFの読み込みに失敗しました。");
+    console.error(error);
+  }
+};
+
+// メインの打刻処理
+async function main() {
+  try {
+    // ※初期化は上で終わっているので、すぐユーザー情報の取得へ
     updateStatus("ユーザー情報を取得中...");
     const profile = await liff.getProfile();
     const userId = profile.userId;
 
-    // 3. 位置情報の取得
+    // 位置情報の取得
     updateStatus("位置情報を取得中...");
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -71,7 +65,7 @@ async function main() {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
-    // 4. 現在日時の取得（日本時間の YYYY-MM-DD HH:mm 形式に変換）
+    // 現在日時の取得（日本時間の YYYY-MM-DD HH:mm 形式に変換）
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -85,26 +79,26 @@ async function main() {
     const payload = {
       userId: userId,
       timestamp: timestamp,
-      location: `${longitude},${latitude}`, // ★「経度」を先にする！
+      location: `${longitude},${latitude}`, // 「経度」を先にする
       action: "clock_in"
     };
 
-    // 5. GASへデータ送信（★CORS回避設定済）
+    // GASへデータ送信
     updateStatus("データを送信中...");
     const response = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain" // ★GASのCORSエラー回避のため text/plain
+        "Content-Type": "text/plain" // GASのCORSエラー回避のため text/plain
       },
       body: JSON.stringify(payload),
-      redirect: "follow" // ★GASのリダイレクト仕様に対応
+      redirect: "follow" // GASのリダイレクト仕様に対応
     });
 
     if (!response.ok) {
       throw new Error(`送信失敗: ステータスコード ${response.status}`);
     }
 
-    // 6. 成功したらLIFFを閉じる
+    // 成功したらLIFFを閉じる
     document.getElementById("spinner").style.display = "none";
     updateStatus("打刻完了！");
     setTimeout(() => {
@@ -123,12 +117,3 @@ async function main() {
     }
   }
 }
-
-// ページの読み込みが完了したらメイン処理を実行
-window.onload = function() {
-  if (navigator.geolocation) {
-    main();
-  } else {
-    showError("この端末では位置情報がサポートされていません。");
-  }
-};
