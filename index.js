@@ -57,8 +57,7 @@ async function main() {
     const payload = {
       userId: userId,
       timestamp: timestamp,
-      latitude: latitude,   // ★別々で送る
-      longitude: longitude, // ★別々で送る
+      location: `${longitude},${latitude}`, // ★「経度」を先にする！
       action: "clock_in"
     };
 
