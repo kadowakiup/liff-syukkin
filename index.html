@@ -8,7 +8,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-    /* ローディング画面のシンプルなデザイン */
+    /* 画面の基本的なデザイン */
     body {
       margin: 0;
       padding: 0;
@@ -50,6 +50,10 @@
 </head>
 <body>
 
+  <div id="initial-view">
+    <button id="clock-in-btn" style="padding: 15px 40px; font-size: 18px; background-color: #06c755; color: white; border: none; border-radius: 8px; cursor: pointer;">出勤する</button>
+  </div>
+  
   <div class="spinner" id="spinner" style="display: none;"></div>
   <div id="status-text"></div>
   <div id="error-message"></div>
