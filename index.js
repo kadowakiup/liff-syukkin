@@ -12,9 +12,9 @@ function updateStatus(text) {
 function showError(text, showRegisterBtn = false) {
   document.getElementById("spinner").style.display = "none";
   document.getElementById("status-text").innerText = "エラーが発生しました";
+  // ボタンを出す場合は、メッセージを短く表示
   document.getElementById("error-message").innerText = text;
   
-  // ★ showRegisterBtnがtrueなら登録ボタンエリアを表示
   if (showRegisterBtn) {
     document.getElementById("register-container").style.display = "block";
   }
@@ -105,10 +105,10 @@ async function main() {
       const resultJson = JSON.parse(responseText);
       // Anycrossは成功時に code: 0 を返す仕様。0以外ならエラーとみなす。
       if (resultJson.code !== 0 && resultJson.code !== undefined) {
-        // 第2引数を true にして、登録ボタンを表示させる
-        showError("スタッフデータが見つかりませんでした。「登録」から名前の登録を行ってください。", true);
-        return; // ここで処理を終了する（打刻完了画面に行かせない）
-      }
+        // メッセージをシンプルに変更
+        showError("名前の登録が見つかりませんでした。「登録」から名前の登録を行ってください。", true);
+        return;
+        }
     } catch (e) {
       // JSON形式じゃないエラー（GASがクラッシュした等）の場合は通常の通信エラー扱い
       if (!response.ok || responseText.includes("Error")) {
