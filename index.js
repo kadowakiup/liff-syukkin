@@ -57,7 +57,7 @@ async function main() {
     const payload = {
       userId: userId,
       timestamp: timestamp,
-      location: `${latitude},${longitude}`, // ★緯度と経度をカンマでつないだ1つの文字列にする
+      location: `${longitude},${latitude}`, // ★「経度」を先にする！
       action: "clock_in"
     };
 
