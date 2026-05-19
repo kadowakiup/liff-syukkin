@@ -142,15 +142,12 @@
 
 const LIFF_ID = "2009827198-EiWGvF0N"; 
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzEqLJDyl6t3N2pKcDnO0-w0uFTcO6x5tzQLN69-YsuSEWtEsMpXVwKx89592abTs7VdQ/exec";
-// ★ 登録用LIFFのURLを定義
 const REGISTER_LIFF_URL = "https://liff.line.me/2009827198-qvnHhjxl"; 
 
-// 画面のテキストを更新する関数
 function updateStatus(text) {
-  document.getElementById("status-text").innerText = text;
+  document.getElementById("status-text").innerHTML = text; // brタグ（改行）を使えるようにinnerHTMLに変更
 }
 
-// エラーを表示する関数
 function showError(text, showRegisterBtn = false) {
   document.getElementById("spinner").style.display = "none";
   document.getElementById("status-text").innerText = "エラーが発生しました";
@@ -161,7 +158,7 @@ function showError(text, showRegisterBtn = false) {
   }
 }
 
-// ページの読み込みが完了した時の処理
+// ★ ページの読み込みが完了した時の処理（自動スタートに変更）
 window.onload = async function() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -171,21 +168,13 @@ window.onload = async function() {
       return;
     }
 
-    // 「出勤する」ボタンが押された時の処理
-    document.getElementById("clock-in-btn").addEventListener("click", function() {
-      if (navigator.geolocation) {
-        document.getElementById("initial-view").style.display = "none";
-        document.getElementById("spinner").style.display = "block";
-        main(); 
-      } else {
-        showError("この端末では位置情報がサポートされていません。");
-      }
-    });
-
-    // 「登録画面へ進む」ボタンが押された時の処理
+    // 「登録画面へ進む」ボタンの処理
     document.getElementById("register-btn").addEventListener("click", function() {
       window.location.href = REGISTER_LIFF_URL;
     });
+
+    // ★ ボタンクリックを待たずに、自動でメイン処理（確認→打刻）をスタート！
+    main();
 
   } catch (error) {
     showError("LIFFの読み込みに失敗しました。");
@@ -200,11 +189,11 @@ async function main() {
     const profile = await liff.getProfile();
     const userId = profile.userId;
 
-    // ▼▼▼ 追加：打刻済みかどうかの確認フロー ▼▼▼
+    // ▼ 打刻済みかどうかの確認フロー
     updateStatus("打刻状態を確認中...");
     const checkPayload = {
       userId: userId,
-      action: "check" // ★ GAS側で確認用URLに振り分けるための合図
+      action: "check"
     };
 
     const checkResponse = await fetch(WEBHOOK_URL, {
@@ -214,7 +203,6 @@ async function main() {
       redirect: "follow"
     });
 
-    // GASから返ってきたJSON（ステータスコード入り）をパース
     let checkResult;
     try {
       checkResult = await checkResponse.json();
@@ -222,19 +210,17 @@ async function main() {
       throw new Error("確認処理で予期せぬエラーが発生しました。");
     }
 
-    // ★ 400（すでに打刻済み）だった場合
+    // 400（すでに打刻済み）だった場合
     if (checkResult.status === 400) {
       document.getElementById("spinner").style.display = "none";
-      // メッセージを少し目立たせる（改行を入れて読みやすく）
-      document.getElementById("status-text").innerHTML = "すでに打刻しています。<br>退勤の場合は再度メニューから退勤を押してください。";
+      updateStatus("すでに打刻しています。<br>退勤の場合は再度メニューから<br>退勤を押してください。");
       document.getElementById("status-text").style.color = "#ff334b";
-      return; // 本打刻には進まず、ここでストップ！
+      return; // ここでストップ
     } else if (checkResult.status !== 200) {
       throw new Error(`確認処理でエラーが発生しました。（コード: ${checkResult.status}）`);
     }
-    // ▲▲▲ ここまで追加 ▲▲▲
 
-    // 200だった場合は、ここから下（本打刻）に進む
+    // ▼ 200だった場合（本打刻に進む）
     updateStatus("位置情報を取得中...");
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -260,7 +246,7 @@ async function main() {
       userId: userId,
       timestamp: timestamp,
       location: `${longitude},${latitude}`,
-      action: "clock_in" // ★ GAS側で本打刻用URLに振り分ける合図
+      action: "clock_in" 
     };
 
     updateStatus("データを送信中...");
@@ -296,7 +282,6 @@ async function main() {
 
   } catch (error) {
     console.error("Error:", error);
-    
     if (error.code === 1) {
       showError("位置情報の取得が許可されていません。スマホの設定からLINEへの位置情報アクセスを許可してください。");
     } else {
