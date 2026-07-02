@@ -63,7 +63,7 @@ async function main() {
     const profile = await liff.getProfile();
     const userId = profile.userId;
 
-    updateStatus("打刻状態を確認中...");
+    updateStatus("打刻状態を確認中...<br>このままお待ちください");
     const checkPayload = {
       userId: userId,
       action: "check"
@@ -108,7 +108,7 @@ async function main() {
 
     // ▲▲▲ ここまで ▲▲▲
 
-    updateStatus("位置情報を取得中...");
+    updateStatus("位置情報を取得中...<br>お待ちください");
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: true,
@@ -136,7 +136,7 @@ async function main() {
       action: "clock_in" 
     };
 
-    updateStatus("データを送信中...");
+    updateStatus("データを送信中...<br>打刻が完了するまでお待ちください");
     const response = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: {
