@@ -40,8 +40,6 @@ window.onload = async function() {
       return;
     }
 
-    // ポップアップを出して「OK」が押された時だけメイン処理を開始
-    // ポップアップを出して「OK」が押された時だけメイン処理を開始
     if (window.confirm("本当に出勤しますか？\n打刻できているかの確認は社員へ直接聞いてください。")) {
       main();
     } else {
@@ -52,7 +50,8 @@ window.onload = async function() {
     }
 
   } catch (error) {
-    showError("LIFFの読み込みに失敗しました。");
+    // error.message を追加して、具体的なエラー内容を画面に出す
+    showError("LIFFの読み込みに失敗しました。\n詳細: " + (error.message || error));
     console.error(error);
   }
 };
