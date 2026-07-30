@@ -110,9 +110,9 @@ async function main() {
     updateStatus("位置情報を取得中...<br>お待ちください");
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 0
+        enableHighAccuracy: false, // ★変更: GPSだけでなくWi-Fiや携帯基地局の電波も妥協して使う（室内で通りやすくなる）
+        timeout: 30000,            // ★変更: 20秒から30秒に延長（諦めるまでの時間を延ばす）
+        maximumAge: 60000          // ★変更: 0から60000(1分)に変更（1分以内の古い位置情報がスマホに残っていればそれを即座に使う）
       });
     });
 
