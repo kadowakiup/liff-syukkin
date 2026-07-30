@@ -160,12 +160,9 @@ async function main() {
       }
     }
 
-    // 成功したらLIFFを閉じる
+    // 打刻完了時の処理（自動で閉じないように変更）
     document.getElementById("spinner").style.display = "none";
-    updateStatus("打刻完了！");
-    setTimeout(() => {
-      liff.closeWindow();
-    }, 500);
+    updateStatus("打刻完了！<br>画面左上の「×」ボタンで閉じてください。");
 
   } catch (error) {
     console.error("Error:", error);
