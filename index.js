@@ -150,13 +150,15 @@ async function main() {
     try {
       const resultJson = JSON.parse(responseText);
       if (resultJson.code !== 0 && resultJson.code !== undefined) {
-        // 本打刻時にエラーが起きた場合も汎用エラーとして処理
         showError("処理エラーが発生しました。（コード: " + resultJson.code + "）");
         return;
       }
     } catch (e) {
-      if (!response.ok || responseText.includes("Error")) {
-        throw new Error(`システムエラー: ${responseText}`);
+      // GASがHTML（エラーページ）を返してきた場合の処理
+      if (responseText.includes("現在、ファイルを開くことができません") || responseText.includes("<html")) {
+        throw new Error("Googleサーバーで一時的な通信エラーが発生しました。\nLINEアプリを一度完全に閉じて（タスクキル）、少し時間をおいてから再度お試しください。");
+      } else {
+        throw new Error("システムエラーが発生しました。\n電波の良い場所で再度お試しください。");
       }
     }
 
