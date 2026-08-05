@@ -168,7 +168,7 @@ async function main() {
     });
 
     const submitController = new AbortController();
-    const submitTimeoutId = setTimeout(() => submitController.abort(), 10000);
+    const submitTimeoutId = setTimeout(() => submitController.abort(), 20000);
     let response;
 
     try {
