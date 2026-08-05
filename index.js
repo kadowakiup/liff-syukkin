@@ -75,11 +75,17 @@ async function main() {
       redirect: "follow"
     });
 
+    const checkResponseText = await checkResponse.text();
     let checkResult;
     try {
-      checkResult = await checkResponse.json();
+      checkResult = JSON.parse(checkResponseText);
     } catch (e) {
-      throw new Error("確認処理で予期せぬエラーが発生しました。");
+      // GASからJSONではなく、HTML（エラーページ）やテキストが返ってきた場合の処理
+      if (checkResponseText.includes("現在、ファイルを開くことができません") || checkResponseText.includes("<html")) {
+        throw new Error("Googleサーバーで一時的な通信エラーが発生しました。\nLINEアプリを一度完全に閉じて（タスクキル）、少し時間をおいてから再度お試しください。");
+      } else {
+        throw new Error("確認処理で通信エラーが発生しました。\n電波の良い場所で再度お試しいただくか、念のためLark上で直接打刻状況を確認してください。");
+      }
     }
 
     // ▼▼▼ ステータスコードごとの条件分岐 ▼▼▼
