@@ -67,12 +67,13 @@ async function main() {
     updateStatus("打刻状態を確認中...<br>このままお待ちください");
     const checkParams = new URLSearchParams({
       userId: userId,
-      action: "check"
+      action: "check",
+      t: Date.now() // ★追加：iPhoneが古い通信結果を使い回さない（キャッシュクリア）ための呪文
     });
 
     const checkController = new AbortController();
-    // ★修正1：GASの処理待ちを考慮して、タイマーを10秒(10000)から20秒(20000)に延長
-    const checkTimeoutId = setTimeout(() => checkController.abort(), 20000);
+    // ★変更：20000（20秒）から 40000（40秒）に延長して気長に待つ
+    const checkTimeoutId = setTimeout(() => checkController.abort(), 40000);
     let checkResponse;
 
     try {
@@ -81,7 +82,7 @@ async function main() {
         redirect: "follow",
         signal: checkController.signal
       });
-      clearTimeout(checkTimeoutId); // 成功したらタイマー解除
+      clearTimeout(checkTimeoutId);
     } catch (e) {
       if (e.name === 'AbortError') {
         throw new Error("確認処理の通信がタイムアウトしました。\n電波の良い環境で再度お試しください。");
@@ -164,20 +165,22 @@ async function main() {
       userId: userId,
       timestamp: timestamp,
       location: `${longitude},${latitude}`,
-      action: "clock_in" 
+      action: "clock_in",
+      t: Date.now() // ★追加：キャッシュクリア
     });
 
     const submitController = new AbortController();
-    const submitTimeoutId = setTimeout(() => submitController.abort(), 20000);
+    // ★変更：20000（20秒）から 40000（40秒）に延長
+    const submitTimeoutId = setTimeout(() => submitController.abort(), 40000); 
     let response;
 
     try {
       response = await fetch(`${WEBHOOK_URL}?${submitParams.toString()}`, {
-        method: "GET", // ★POSTからGETに変更
+        method: "GET",
         redirect: "follow",
         signal: submitController.signal
       });
-      clearTimeout(submitTimeoutId); // 成功したらタイマー解除
+      clearTimeout(submitTimeoutId);
     } catch (e) {
       if (e.name === 'AbortError') {
         throw new Error("打刻の通信がタイムアウトしました。\n電波の良い環境で再度お試しください。");
