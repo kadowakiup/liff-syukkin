@@ -70,14 +70,14 @@ async function main() {
       action: "check"
     });
 
-    // 無限ロード（フリーズ）を防ぐための10秒タイマー
     const checkController = new AbortController();
-    const checkTimeoutId = setTimeout(() => checkController.abort(), 10000);
+    // ★修正1：GASの処理待ちを考慮して、タイマーを10秒(10000)から20秒(20000)に延長
+    const checkTimeoutId = setTimeout(() => checkController.abort(), 20000);
     let checkResponse;
 
     try {
       checkResponse = await fetch(`${WEBHOOK_URL}?${checkParams.toString()}`, {
-        method: "GET", // ★POSTからGETに変更
+        method: "GET",
         redirect: "follow",
         signal: checkController.signal
       });
@@ -95,7 +95,6 @@ async function main() {
     try {
       checkResult = JSON.parse(checkResponseText);
     } catch (e) {
-      // GASからJSONではなく、HTML（エラーページ）やテキストが返ってきた場合の処理
       if (checkResponseText.includes("現在、ファイルを開くことができません") || checkResponseText.includes("<html")) {
         throw new Error("Googleサーバーで一時的な通信エラーが発生しました。\nLINEアプリを一度完全に閉じて（タスクキル）、少し時間をおいてから再度お試しください。");
       } else {
@@ -103,23 +102,34 @@ async function main() {
       }
     }
 
-    // ▼▼▼ ステータスコードごとの条件分岐 ▼▼▼
-    if (checkResult.status === 400) {
+    // ★修正2：AnycrossがBodyの中にステータス(400など)を隠している場合を取り出す
+    let currentStatus = checkResult.status;
+    if (currentStatus === 200 && checkResult.body) {
+      try {
+        const bodyJson = JSON.parse(checkResult.body);
+        if (bodyJson.status) {
+          currentStatus = bodyJson.status;
+        }
+      } catch (err) {}
+    }
+
+    // ▼▼▼ ステータスコードごとの条件分岐 (checkResult.statusではなくcurrentStatusを使う) ▼▼▼
+    if (currentStatus === 400) {
       document.getElementById("spinner").style.display = "none";
       updateStatus("すでに打刻しています。<br>退勤の場合は再度メニューから<br>退勤を押してください。");
       document.getElementById("status-text").style.color = "#ff334b";
       return; 
     } 
-    else if (checkResult.status === 403) {
+    else if (currentStatus === 403) {
       showError("先に登録をしてください", "登録画面へ進む", REGISTER_LIFF_URL);
       return;
     } 
-    else if (checkResult.status === 406) {
+    else if (currentStatus === 406) {
       showError("先にシフトを追加してください", "シフト追加画面へ進む", ADD_SHIFT_LIFF_URL);
       return;
     } 
-    else if (checkResult.status !== 200) {
-      throw new Error(`確認処理エラー（コード: ${checkResult.status}）\n詳細: ${checkResult.body}`);
+    else if (currentStatus !== 200) {
+      throw new Error(`確認処理エラー（コード: ${currentStatus}）\n詳細: ${checkResult.body}`);
     }
 
     // ==========================================
