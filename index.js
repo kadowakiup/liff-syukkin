@@ -193,8 +193,9 @@ async function main() {
 
     try {
       const resultJson = JSON.parse(responseText);
-      if (resultJson.code !== 0 && resultJson.code !== undefined) {
-        showError("処理エラーが発生しました。（コード: " + resultJson.code + "）");
+      // ★ "status: 200" 以外（かつデータが存在する）ならエラーとする
+      if (resultJson.status !== 200 && resultJson.status !== undefined) {
+        showError("処理エラーが発生しました。（ステータス: " + resultJson.status + "）");
         return;
       }
     } catch (e) {
