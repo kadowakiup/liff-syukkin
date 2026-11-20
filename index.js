@@ -356,6 +356,7 @@ async function main() {
     }
     else if (resultStatus === 408) {
       showError("出勤時間を過ぎています。打刻する場合は社員に声をかけてください。");
+      document.getElementById("status-text").style.color = "#ff334b";
       return;
     } 
 
