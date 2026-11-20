@@ -350,15 +350,16 @@ async function main() {
       showError("先にシフトを追加してください", "シフト追加画面へ進む", ADD_SHIFT_LIFF_URL);
       return;
     } 
+    else if (resultStatus === 408) {
+      document.getElementById("spinner").style.display = "none";
+      updateStatus("出勤時間を過ぎています。<br>打刻する場合は社員に声をかけてください。");
+      document.getElementById("status-text").style.color = "#ff334b";
+      return;
+    } 
     else if (resultStatus !== 200 && resultStatus !== undefined) {
       showError("処理エラーが発生しました。（ステータス: " + resultStatus + "）");
       return;
     }
-    else if (resultStatus === 408) {
-      showError("出勤時間を過ぎています。打刻する場合は社員に声をかけてください。");
-      document.getElementById("status-text").style.color = "#ff334b";
-      return;
-    } 
 
     // 打刻完了時の処理
     document.getElementById("spinner").style.display = "none";
