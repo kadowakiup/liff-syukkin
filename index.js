@@ -354,6 +354,10 @@ async function main() {
       showError("処理エラーが発生しました。（ステータス: " + resultStatus + "）");
       return;
     }
+    else if (resultStatus === 408) {
+      showError("出勤時間を過ぎています。打刻する場合は社員に声をかけてください。");
+      return;
+    } 
 
     // 打刻完了時の処理
     document.getElementById("spinner").style.display = "none";
